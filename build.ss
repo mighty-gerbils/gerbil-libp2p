@@ -3,4 +3,4 @@
 (import :std/build-script)
 
 (defbuild-script
-  '())
+  '("libp2p/interface"))
