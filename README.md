@@ -33,8 +33,9 @@ That means:
 ### Advanced Host APIs
 
 - peerstore
-- resource manager
 - network
+- resource manager
+- event bus
 
 ### Advanced Functionality
 
@@ -58,4 +59,4 @@ This is a very big endeavor in itself, so it might take a while; volunteers welc
 ## Copyright and License
 
 © 2024 The Mighty Gerbils Contributors;
-distributed with the Gerbil Liecense, dual Apache-2.0 and LGPL v2.1.
+distributed with the Gerbil License, dual Apache-2.0 and LGPL v2.1.
