@@ -2,12 +2,13 @@
 ;;; libp2p host interface
 
 (import :std/io/interface
-        :std/misc/timeout)
+        :std/misc/timeout
+        "utils"
+        "multiaddress")
 (export #t)
 
-(defstruct PeerID ())
-(defstruct MultiAddr ())
-(defstruct AddrInfo ())
+(defstruct PeerID (id))
+(defstruct PeerStore ())
 
 (interface (Stream Closer)
   (protocol) => :string
@@ -24,8 +25,16 @@
   (set-output-timeout! (timeo :~ (maybe timeout? )))
   => :void)
 
+
+;;; Host is an object participating in a p2p network, which
+;;; implements protocols or provides services. It handles
+;;; requests like a Server, and issues requests like a Client.
+;;; It is called Host because it is both Server and Client (and Peer
+;;; may be confusing).
 (interface (Host Closer)
   (ID) => PeerID
+
+  (PeerStore) => PeerStore
 
   ;; => [MultiAddr]
   (addrs) => :list
@@ -36,12 +45,11 @@
                (protos :~ protocol-or-list?))
   => Stream
 
-  ;; handler: lambda (Stream)
-  (set-protocol-handler! (proto-or-list :~ protocol-or-list? )
+  (set-protocol-handler! (proto-or-list :~ protocol-or-list?)
                          (handler : :procedure))
-  => :void)
+  => :void
 
-(defrule (protocol-or-list? obj)
-  (or (string? obj)
-      (and (list? obj)
-           (andmap string? obj))))
+  ;; Removal of protocol handlers
+  (remove-protocol-handler! (pid :~ string?))
+  => :void
+  )
