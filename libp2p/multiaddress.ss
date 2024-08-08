@@ -3,10 +3,11 @@
 
 (import :std/io/interface
         :std/sugar
-        :std/misc/alist
+        :std/generic
         :std/misc/list
         :std/format
         :std/iter
+        :std/lazy
         "utils")
 
 (export #t)
@@ -16,27 +17,34 @@
   (def (name ma)
     (andmap (lambda (protocol) (get-protocol-value ma protocol)) 'protocols)))
 
-(defstruct multi-address (protocols str)
+;;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+;; Multi Address Type
+;;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+(defstruct multi-address (protocols str bytes)
   constructor: init!)
 
 (defmethod {init! multi-address}
   (lambda (self input-str)
-    (set! (@ self str) input-str)
-    (let* ((protocol-map (chain (string-split input-str #\/)
-                           (filter (lambda (e) (not (string-empty? e))) <>)
-                           plist->hash-table)))
-      (set! (@ self protocols) protocol-map))))
+    (set! self.str (lazy input-str))
+    (set! self.bytes (lazy (string->bytes input-str)))
+    (let* ((protocol-list (chain (string-split input-str #\/)
+                            (filter (lambda (e) (not (string-empty? e))) <>))))
+      (set! self.protocols protocol-list))))
 
-(def (get-protocol-value ma protocol)
-  (match ma
-    ((? string?) (get-protocol-value (multi-address ma) protocol))
-    (_ (hash-get (@ ma protocols) protocol))))
+(defgeneric get-protocol-value
+  (lambda (ma protocol) #f))
+
+(defmethod (get-protocol-value (ma :string) (protocol :string))
+  (get-protocol-value (multi-address ma) protocol))
+
+(defmethod (get-protocol-value (ma :vector) (protocol :string))
+  (get-protocol-value (multi-address (utf8->string ma)) protocol))
+
+(defmethod (get-protocol-value (ma multi-address) (protocol :string))
+  (pget protocol ma.protocols))
 
 (def (get-protocol-values ma protocols)
   (map (lambda (protocol) (get-protocol-value ma protocol)) protocols))
-
-(def (get-protocols ma)
-  (hash-keys (@ ma protocols)))
 
 (def-multipattern tcp-ip? "ip4" "tcp")
 (def-multipattern p2p? "p2p")

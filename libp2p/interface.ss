@@ -5,6 +5,7 @@
         :std/misc/timeout
         "utils"
         "multiaddress")
+
 (export #t)
 
 (defstruct PeerID (id))
@@ -32,14 +33,14 @@
 ;;; It is called Host because it is both Server and Client (and Peer
 ;;; may be confusing).
 (interface (Host Closer)
-  (ID) => PeerID
+  (id) => PeerID
 
-  (PeerStore) => PeerStore
+  (peer-store) => PeerStore
 
   ;; => [MultiAddr]
   (addrs) => :list
 
-  (connect! (addrs : AddrInfo) => :void)
+  (connect! (addrs :~ multi-address?) => :void)
 
   (open-stream (p : PeerID)
                (protos :~ protocol-or-list?))
@@ -47,9 +48,5 @@
 
   (set-protocol-handler! (proto-or-list :~ protocol-or-list?)
                          (handler : :procedure))
-  => :void
-
-  ;; Removal of protocol handlers
-  (remove-protocol-handler! (pid :~ string?))
   => :void
   )
